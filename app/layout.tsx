@@ -1,18 +1,17 @@
 import "./globals.css"
 import { Inter } from "next/font/google"
 import { ThemeProvider } from "@/components/theme-provider"
-import { Sidebar } from "@/components/sidebar"
-import { TopNav } from "@/components/top-nav"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import { SettingsProvider } from "@/contexts/settings-context"
+import { Toaster } from "@/components/ui/sonner"
 import type React from "react"
+import type { Metadata } from "next"
 
 const inter = Inter({ subsets: ["latin"] })
 
-export const metadata = {
-  title: "Flowers&Saints Dashboard",
-  description: "A modern, responsive financial dashboard",
-    generator: 'v0.app'
+export const metadata: Metadata = {
+  title: "TenderMatch — Construction Tender Finder",
+  description:
+    "Fill in your construction company profile and get AI-matched public tenders with an explanation of why each one fits.",
+  generator: "v0.app",
 }
 
 export default function RootLayout({
@@ -23,23 +22,11 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          <SettingsProvider>
-            <TooltipProvider delayDuration={0}>
-              <div className="min-h-screen flex">
-                <Sidebar />
-                <div className="flex-1">
-                  <TopNav />
-                  <div className="container mx-auto p-6 max-w-7xl">
-                    <main className="w-full">{children}</main>
-                  </div>
-                </div>
-              </div>
-            </TooltipProvider>
-          </SettingsProvider>
+        <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
+          {children}
+          <Toaster richColors position="top-center" />
         </ThemeProvider>
       </body>
     </html>
   )
 }
-

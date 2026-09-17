@@ -1,27 +1,99 @@
-import { AccountsOverview } from "@/components/accounts-overview"
-import { RecentTransactions } from "@/components/recent-transactions"
-import { QuickBillPay } from "@/components/quick-bill-pay"
-import { BusinessMetrics } from "@/components/business-metrics"
+"use client"
 
-export default function Dashboard() {
+import { useState } from "react"
+import { CompanyProfileForm } from "@/components/company-profile-form"
+import { TenderResults } from "@/components/tender-results"
+import { matchTenders } from "@/lib/tender-mock"
+import type { CompanyProfile, TenderMatch } from "@/lib/tender-types"
+import { HardHat } from "lucide-react"
+import { toast } from "sonner"
+
+const EMPTY_PROFILE: CompanyProfile = {
+  cpvCode: "",
+  contractNature: "",
+  placeOfPerformance: "",
+  contractValueMin: "",
+  contractValueMax: "",
+  submissionDeadline: "",
+  participationRole: "",
+  financialGuarantees: "",
+  insuranceLimit: "",
+  availabilityTimeline: "",
+  certificates: [],
+  exclusions: "",
+}
+
+export default function Page() {
+  const [profile, setProfile] = useState<CompanyProfile>(EMPTY_PROFILE)
+  const [matches, setMatches] = useState<TenderMatch[]>([])
+  const [loading, setLoading] = useState(false)
+  const [hasSearched, setHasSearched] = useState(false)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  const handleSubmit = () => {
+    const filledFields = Object.values(profile).filter((v) =>
+      Array.isArray(v) ? v.length > 0 : v.trim() !== "",
+    ).length
+    if (filledFields < 2) {
+      toast.error("Please fill in at least a couple of fields to get a meaningful match.")
+      return
+    }
+
+    setLoading(true)
+    setHasSearched(true)
+    setSelectedId(null)
+    // Simulate a backend/AI round-trip with mock data.
+    setTimeout(() => {
+      setMatches(matchTenders(profile))
+      setLoading(false)
+      toast.success("Found your 3 best-matched tenders.")
+    }, 1100)
+  }
+
+  const handleReset = () => {
+    setProfile(EMPTY_PROFILE)
+    setMatches([])
+    setHasSearched(false)
+    setSelectedId(null)
+  }
+
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+    <div className="min-h-screen bg-muted/20">
+      <header className="border-b bg-background">
+        <div className="mx-auto flex max-w-7xl items-center gap-3 px-4 py-4 sm:px-6">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-500 text-white">
+            <HardHat className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-lg font-bold leading-tight">TenderMatch</h1>
+            <p className="text-sm text-muted-foreground">AI tender finder for construction companies</p>
+          </div>
+        </div>
+      </header>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <div className="lg:col-span-1">
-          <AccountsOverview />
-        </div>
-        <div className="lg:col-span-1">
-          <RecentTransactions />
-        </div>
-        <div className="lg:col-span-1">
-          <QuickBillPay />
-        </div>
-      </div>
+      <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6">
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+          <div className="lg:sticky lg:top-6 lg:self-start">
+            <CompanyProfileForm
+              profile={profile}
+              onChange={setProfile}
+              onSubmit={handleSubmit}
+              onReset={handleReset}
+              loading={loading}
+            />
+          </div>
 
-      <BusinessMetrics />
+          <section aria-label="Matched tenders">
+            <TenderResults
+              matches={matches}
+              loading={loading}
+              hasSearched={hasSearched}
+              selectedId={selectedId}
+              onSelect={setSelectedId}
+            />
+          </section>
+        </div>
+      </main>
     </div>
   )
 }
-
