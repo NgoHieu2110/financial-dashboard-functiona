@@ -271,7 +271,9 @@ export function matchTenders(profile: CompanyProfile): TenderMatch[] {
     return { tender, score, reasons, considerations, summary }
   })
 
-  return matches.sort((a, b) => b.score - a.score).slice(0, 3)
+  // Return every scored tender, best first. The UI locks the top 3 into the
+  // focus lane and dims the rest above/below as "others".
+  return matches.sort((a, b) => b.score - a.score)
 }
 
 export function formatCurrency(value: number, code = "EUR") {
